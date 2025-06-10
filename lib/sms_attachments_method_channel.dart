@@ -31,4 +31,9 @@ class MethodChannelSmsAttachments extends SmsAttachmentsPlatform {
   Future<bool> canSendAttachments() async {
     return await methodChannel.invokeMethod('canSendAttachments');
   }
+
+  @override
+  Future<bool> isRunningOnMac() async {
+    return await methodChannel.invokeMethod('isRunningOnMac');
+  }
 }

@@ -20,4 +20,8 @@ class SmsAttachments {
   static Future<bool> canSendAttachments() {
     return SmsAttachmentsPlatform.instance.canSendAttachments();
   }
+
+  static Future<bool> isRunningOnMac() {
+    return SmsAttachmentsPlatform.instance.isRunningOnMac();
+  }
 }

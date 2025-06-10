@@ -38,4 +38,8 @@ abstract class SmsAttachmentsPlatform extends PlatformInterface {
   Future<bool> canSendAttachments() {
     throw UnimplementedError('canSendAttachments() has not been implemented.');
   }
+
+  Future<bool> isRunningOnMac() {
+    throw UnimplementedError('isRunningOnMac() has not been implemented.');
+  }
 }

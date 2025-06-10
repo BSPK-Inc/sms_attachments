@@ -3,6 +3,8 @@ import UIKit
 import MessageUI
 
 public class SmsAttachmentsPlugin: NSObject, FlutterPlugin {
+  static let macMessagesScheme = "sms://"
+
   var result: FlutterResult?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -28,6 +30,9 @@ public class SmsAttachmentsPlugin: NSObject, FlutterPlugin {
 
     case "canSendAttachments":
       result(canSendAttachments())
+
+    case "isRunningOnMac":
+      result(isRunningOnMac)
     
     default:
       result(FlutterMethodNotImplemented)
@@ -35,15 +40,24 @@ public class SmsAttachmentsPlugin: NSObject, FlutterPlugin {
   }
 
   private func canSendAttachments() -> Bool {
+    if isRunningOnMac {
+      return false
+    }
     return MFMessageComposeViewController.canSendAttachments()
   }
 
   private func canSendText() -> Bool {
+    if isRunningOnMac {
+      guard let url = URL(string: SmsAttachmentsPlugin.macMessagesScheme) else {
+        return false
+      }
+      return UIApplication.shared.canOpenURL(url)
+    }
     return MFMessageComposeViewController.canSendText()
   }
   
   private func send(paths: [String], recipients: [String], message: String, result: @escaping FlutterResult) {
-    guard canSendText() else {
+    guard !isRunningOnMac, canSendText() else {
       result(FlutterError(code: "UNAVAILABLE", message: "SMS services are not available", details: nil))
       return
     }
@@ -66,6 +80,10 @@ public class SmsAttachmentsPlugin: NSObject, FlutterPlugin {
       rootViewController.present(messageController, animated: true, completion: nil)
     }
     
+  }
+
+  private var isRunningOnMac: Bool {
+    return ProcessInfo.processInfo.isiOSAppOnMac;
   }
 }
 

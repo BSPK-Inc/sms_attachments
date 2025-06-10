@@ -20,6 +20,9 @@ class MockSmsAttachmentsPlatform
       List<String>? filePaths}) {
     return Future.value();
   }
+
+  @override
+  Future<bool> isRunningOnMac() => Future.value(false);
 }
 
 void main() {

@@ -75,11 +75,41 @@ public class SmsAttachmentsPlugin: NSObject, FlutterPlugin {
       }
     }
     
-    self.result = result
-    if let rootViewController = UIApplication.shared.delegate?.window??.rootViewController {
-      rootViewController.present(messageController, animated: true, completion: nil)
+    guard let presenter = topmostViewController() else {
+      // Fail closed. The result is only delivered from the compose controller's
+      // delegate, so returning without presenting and without answering here left
+      // the Dart future pending forever.
+      result(FlutterError(code: "NO_PRESENTER",
+                          message: "No view controller available to present the message composer",
+                          details: nil))
+      return
     }
-    
+
+    self.result = result
+    presenter.present(messageController, animated: true, completion: nil)
+  }
+
+  /// The view controller to present from.
+  ///
+  /// `UIApplication.shared.delegate?.window` is nil once the app adopts the
+  /// UIScene lifecycle: the window belongs to the scene delegate, not the app
+  /// delegate. Walk the connected scenes instead, and then down through anything
+  /// already presented, since presenting on a controller that is itself presenting
+  /// does nothing.
+  private func topmostViewController() -> UIViewController? {
+    let windows = UIApplication.shared.connectedScenes
+      .compactMap { $0 as? UIWindowScene }
+      .flatMap { $0.windows }
+
+    let window = windows.first { $0.isKeyWindow } ?? windows.first
+    guard var controller = window?.rootViewController else {
+      return nil
+    }
+
+    while let presented = controller.presentedViewController {
+      controller = presented
+    }
+    return controller
   }
 
   private var isRunningOnMac: Bool {
